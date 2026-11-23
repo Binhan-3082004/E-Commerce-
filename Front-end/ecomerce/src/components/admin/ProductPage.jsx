@@ -1,15 +1,41 @@
 // import { showAlert } from '../ui.js';
-
+import { getProducts } from "../../services/api";
+import { useState, useEffect } from "react";
 export function ProductPage() {
+    const [products, setProducts] = useState([]);
+    const [total, setTotal] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [setError] = useState('');
+    const totalStock = products.reduce((sum, products) => {
+        return sum + Number(products.stock || 0)
+    }, 0)
+    const lowStock = products.filter(
+        product => product.stock > 0 && product.stock <= 5
+    ).length;
+    const noStock = products.filter(
+        product => product.stock === 0
+    ).length
+    useEffect(() => {
+        async function fetchProducts() {
+            try {
+                const data = await getProducts();
+                setProducts(data.products);
+                setTotal(data.total)
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        }
 
-
-
+        fetchProducts();
+    }, []);
     const stats = [
         {
             id: 'stat-total',
             title: 'Tổng sản phẩm',
-            value: '...',
-            subtext: 'Trong ... danh mục',
+            value: loading ? '...' : total,
+            subtext: `Tổng ${total}  sản phẩm trên trang`,
             icon: (
                 <>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
@@ -21,7 +47,7 @@ export function ProductPage() {
         {
             id: 'stat-stock',
             title: 'Tổng tồn kho',
-            value: '...',
+            value: loading ? '...' : totalStock,
             subtext: 'Sản phẩm sẵn sàng bán',
             icon: (
                 <>
@@ -33,7 +59,7 @@ export function ProductPage() {
         {
             id: 'stat-low',
             title: 'Sắp hết hàng',
-            value: '...',
+            value: loading ? '...' : lowStock,
             subtext: 'Tồn kho từ 1–5 sản phẩm',
             icon: (
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -41,8 +67,8 @@ export function ProductPage() {
         },
         {
             id: 'stat-out',
-            title: 'Hết hàng',
-            value: '...',
+            title: loading ? '...' : 'Hết hàng',
+            value: noStock,
             subtext: 'Cần bổ sung tồn kho',
             icon: (
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -78,7 +104,7 @@ export function ProductPage() {
                     <div key={item.id} id={item.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
                         <div>
                             <p className="text-xs sm:text-sm font-medium text-gray-500">{item.title}</p>
-                            <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{item.value}</p>
+                            <p className="text-xl sm:text-2xl font-bold text-blue-600 mt-1">{item.value}</p>
                             <p className="text-xs text-gray-400 mt-1">{item.subtext}</p>
                         </div>
                         <div className="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
@@ -93,7 +119,7 @@ export function ProductPage() {
                 <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
                     <div className="flex items-center gap-3">
                         <span className="font-bold text-gray-900 text-base">Tất cả sản phẩm</span>
-                        <span className="bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">...</span>
+                        <span className="bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">{total} sản phẩm</span>
                     </div>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-4 sm:px-5 py-3 border-b border-gray-100">
