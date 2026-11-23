@@ -1,0 +1,154 @@
+### ==============================================================================
+### E-COMMERCE API TESTING (Sử dụng extension REST Client hoặc Thunder Client)
+### Base URL: http://localhost:3000
+### ==============================================================================
+
+@baseUrl = http://localhost:3000/api
+
+### 1. Kiểm tra trạng thái máy chủ (Health check)
+GET {{baseUrl}}/health
+
+### ------------------------------------------------------------------------------
+### 2. AUTHENTICATION (Đăng nhập / Đăng ký)
+### ------------------------------------------------------------------------------
+
+### 2.1. Đăng nhập với tài khoản SELLER (Người bán)
+# @name loginSeller
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "seller@vmo.vn",
+  "password": "123456"
+}
+
+### Lưu token của Seller vào biến
+@sellerToken = {{loginSeller.response.body.token}}
+
+### 2.2. Đăng nhập với tài khoản BUYER (Người mua)
+# @name loginBuyer
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "buyer@vmo.vn",
+  "password": "123456"
+}
+
+### Lưu token của Buyer vào biến
+@buyerToken = {{loginBuyer.response.body.token}}
+
+### 2.3. Đăng ký tài khoản mới (Buyer)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Trần Thị B",
+  "email": "tranthib@gmail.com",
+  "password": "password123",
+  "role": "buyer"
+}
+
+### 2.4. Lấy thông tin tài khoản hiện tại (Me)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{sellerToken}}
+
+### ------------------------------------------------------------------------------
+### 3. PRODUCTS (Quản lý sản phẩm)
+### ------------------------------------------------------------------------------
+
+### 3.1. Lấy danh sách danh mục
+GET {{baseUrl}}/categories
+
+### 3.2. Lấy toàn bộ sản phẩm (Public)
+GET {{baseUrl}}/products
+
+### 3.3. Tìm kiếm sản phẩm theo tên
+GET {{baseUrl}}/products?search=chuột
+
+### 3.4. Lọc sản phẩm theo danh mục
+GET {{baseUrl}}/products?category=Bàn phím
+
+### 3.5. Sắp xếp giá tăng dần (price_asc) hoặc giảm dần (price_desc)
+GET {{baseUrl}}/products?sort=price_asc
+
+### 3.6. Xem chi tiết 1 sản phẩm
+GET {{baseUrl}}/products/1
+
+### 3.7. Thêm mới sản phẩm (Yêu cầu quyền SELLER)
+POST {{baseUrl}}/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+
+{
+  "name": "Webcam Logitech C920 Pro HD",
+  "price": 1750000,
+  "category": "Phụ kiện",
+  "image": "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=600&auto=format&fit=crop&q=80",
+  "description": "Full HD 1080p góc rộng, micro kép tích hợp lọc ồn tự động, thích hợp họp online và stream.",
+  "stock": 20
+}
+
+### 3.8. Cập nhật sản phẩm (Yêu cầu quyền SELLER)
+PUT {{baseUrl}}/products/1
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+
+{
+  "name": "Bàn phím cơ Không dây Keychron K2 V2 (Hot-swap)",
+  "price": 1950000,
+  "category": "Bàn phím",
+  "stock": 30
+}
+
+### 3.9. Xóa sản phẩm (Yêu cầu quyền SELLER)
+DELETE {{baseUrl}}/products/8
+Authorization: Bearer {{sellerToken}}
+
+### ------------------------------------------------------------------------------
+### 4. ORDERS (Đặt hàng & Quản lý đơn)
+### ------------------------------------------------------------------------------
+
+### 4.1. Đặt hàng mới từ giỏ hàng (Yêu cầu BUYER hoặc đăng nhập)
+POST {{baseUrl}}/orders
+Authorization: Bearer {{buyerToken}}
+Content-Type: application/json
+
+{
+  "shippingAddress": "123 Đường Cầu Giấy, Hà Nội",
+  "phone": "0912345678",
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 1
+    },
+    {
+      "productId": 2,
+      "quantity": 2
+    }
+  ]
+}
+
+### 4.2. Xem lịch sử đơn hàng của người mua hiện tại (BUYER)
+GET {{baseUrl}}/orders/my-orders
+Authorization: Bearer {{buyerToken}}
+
+### 4.3. Xem toàn bộ đơn hàng của hệ thống (Yêu cầu SELLER)
+GET {{baseUrl}}/orders
+Authorization: Bearer {{sellerToken}}
+
+### 4.4. Cập nhật trạng thái đơn hàng (Yêu cầu SELLER: pending | shipping | completed | cancelled)
+PATCH {{baseUrl}}/orders/1/status
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+
+{
+  "status": "shipping"
+}
+
+### ------------------------------------------------------------------------------
+### 5. DEV UTILITIES (Tiện ích hỗ trợ học tập)
+### ------------------------------------------------------------------------------
+
+### 5.1. Reset lại database về trạng thái ban đầu
+POST {{baseUrl}}/dev/reset
