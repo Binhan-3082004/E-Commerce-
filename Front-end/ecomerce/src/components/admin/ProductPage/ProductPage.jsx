@@ -1,7 +1,20 @@
 // import { showAlert } from '../ui.js';
-import { getProducts } from "../../services/api";
+import fallbackImg from '../../../assets/fallback.jpg';
+import { getProducts } from "../../../services/api";
 import { useState, useEffect } from "react";
+import { formatVND } from '../../../utils/formatCurrency';
+import { AddProduct } from './AddProduct'
+import { ChangeProduct } from './ChangeProduct';
+import { DeleteProduct } from '../DeleteProduct';
 export function ProductPage() {
+    // let currentPage = 1;
+    // const PAGE_SIZE = 5;
+
+
+    const [showForm, setShowForm] = useState(false)
+    const [showFormChange, setshowFormChange] = useState(false)
+    const [selectedProduct, setSelectedProduct] = useState(null)
+    const [showFormDelete, setshowFormDelete] = useState(false)
     const [products, setProducts] = useState([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -91,7 +104,7 @@ export function ProductPage() {
                     <h1 className="text-2xl font-bold text-gray-900">Quản lý sản phẩm</h1>
                     <p className="text-sm text-gray-500 mt-1">Theo dõi danh mục, giá bán và tồn kho của cửa hàng.</p>
                 </div>
-                <button
+                <button onClick={() => setShowForm(true)}
                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow transition-colors">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -103,9 +116,9 @@ export function ProductPage() {
                 {stats.map((item) => (
                     <div key={item.id} id={item.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
                         <div>
-                            <p className="text-xs sm:text-sm font-medium text-gray-500">{item.title}</p>
+                            <p className="text-xs sm:text-sm font-medium text-gray-900">{item.title}</p>
                             <p className="text-xl sm:text-2xl font-bold text-blue-600 mt-1">{item.value}</p>
-                            <p className="text-xs text-gray-400 mt-1">{item.subtext}</p>
+                            <p className="text-xs text-gray-900 font-medium mt-1">{item.subtext}</p>
                         </div>
                         <div className="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -131,7 +144,55 @@ export function ProductPage() {
                             className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                     </div>
                 </div>
+                <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-4 px-5 py-3 text-xs font-bold text-black uppercase tracking-wider border-b border-gray-100">
+                    <span>Tên sản phẩm</span>
+                    <span className="text-center">Giá bán</span>
+                    <span className="text-center">Tồn kho</span>
+                    <span className="text-center">Danh mục</span>
+                    <span className=" text-center">Thao tác</span>
+                </div>
+                {products.map((item) => (
+                    <div key={item.id} className=" grid grid-cols-[2fr_1fr_1fr_1fr_1fr] items-center gap-4 px-5 py-4 ">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <img
+                                className="object-cover rounded-xl w-10 h-10  shrink-0"
+                                src={item.image}
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = fallbackImg;
+                                }}
+                            />
+                            <div className=' items-center '>
+                                <p className="text-sm font-bold truncate">{item.name}</p>
+                                <p className='text-xs text-blue-400'>ID: #{item.id}</p>
+                            </div>
+
+                        </div>
+
+                        <p className='text-sm font-semibold text-black text-center block'> {formatVND(item.price)}</p>
+                        <p className='text-sm font-semibold text-black text-center '>{item.stock} sản phẩm</p>
+                        <p className='text-sm text-black font-semibold text-center block truncate'>{item.category}</p>
+
+                        <div className="flex items-center gap-2 text-right">
+                            <button onClick={() => { setshowFormChange(true); setSelectedProduct(item) }} className=" flex-1 px-2.5 flex items-center justify-center gap-1.5 text-blue-600 hover:bg-blue-50 border border-blue-200 rounded-xl py-2 text-sm font-medium transition-colors">
+                                <svg className="w-3.5 h-3.0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Sửa
+                            </button>
+                            <button onClick={() => { setSelectedProduct(item); setshowFormDelete(true) }} className=" flex-1 px-2.5 flex items-center justify-center gap-1.5 text-red-600 hover:bg-red-50 border border-red-200 rounded-xl py-2 text-sm font-medium transition-colors">
+                                <svg className="w-3.5 h-3.0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Xóa
+                            </button>
+                        </div>
+                    </div>
+                ))}
             </div>
+            {showForm && <AddProduct onClose={() => setShowForm(false)} />}
+            {showFormChange && < ChangeProduct product={selectedProduct} onClose={() => setshowFormChange(false)} />}
+            {showFormDelete && < DeleteProduct product={selectedProduct} onClose={() => setshowFormDelete(false)} />}
 
         </div>
     )

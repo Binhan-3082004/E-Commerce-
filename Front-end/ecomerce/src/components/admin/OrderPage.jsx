@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { adminGetOrders } from "../../services/apiAdmin";
+import { Dashboard, Time } from '../../utils/Date';
+import { formatVND } from '../../utils/formatCurrency';
+import { statusColor } from '../../utils/statusColor';
 export function OrderPage() {
+
     const [orders, setOrder] = useState([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -119,6 +123,40 @@ export function OrderPage() {
                         <span id="badge-total" className="bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">{total} đơn hàng</span>
                     </div>
                 </div>
+                <div className="hidden sm:grid grid-cols-[2fr_1.5fr_1.5fr_1.2fr_1.5fr_auto] gap-3 px-5 py-3 text-xs font-bold text-gray-900 uppercase tracking-wider border-b border-gray-100">
+                    <span className="text-left">Mã đơn hàng</span>
+                    <span>Khách hàng</span>
+                    <span>Ngày đặt ↓</span>
+                    <span>Tổng tiền</span>
+                    <span>Trạng thái</span>
+                    <span>Thao tác</span>
+                </div>
+                {orders.map((item) => (
+                    <div className="hidden sm:grid grid-cols-[2fr_1.5fr_1.5fr_1.2fr_1.5fr_auto] gap-3 px-5 py-4 border-b border-gray-50 hover:bg-gray-50/60 transition-colors items-center">
+                        <div>
+                            <span className="text-sm font-semibold text-blue-600 cursor-pointer hover:underline order-id" >#OD{item.id}</span>
+                            <p className="text-xs font-medium text-black mt-0.5">{item.items.length} sản phẩm</p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-900">{item.buyer_name}</p>
+                            <p className="text-xs font-medium text-blue-500 mt-0.5">{item.phone}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-900">{Dashboard(item.created_at)}</p>
+                            <p className="mx-5 text-xs font-medium text-blue-500 mt-0.5">{Time(item.created_at)}</p>
+                        </div>
+                        <div className="text-sm font-semibold text-gray-900 whitespace-nowrap">{formatVND(item.total_price)}</div>
+                        <div className={`inline-flex text-xs w-18 font-medium border rounded-full pl-1 ${statusColor(item.status)}`}>{item.status}</div>
+                        <div>
+                            <button className=" text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center gap-1 whitespace-nowrap">
+                                Chi tiết
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     )

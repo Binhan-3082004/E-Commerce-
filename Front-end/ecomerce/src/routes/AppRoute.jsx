@@ -3,7 +3,7 @@ import { LoginPage } from '../pages/LoginPage.jsx'
 import { RegisterPage } from '../pages/RegisterPage.jsx'
 import { HomePage } from '../pages/HomePage.jsx';
 import { AdminPage } from '../pages/AdminPage.jsx';
-import { ProductPage } from '../components/admin/ProductPage.jsx'
+import { ProductPage } from '../components/admin/ProductPage/ProductPage.jsx'
 import { OrderPage } from '../components/admin/OrderPage.jsx'
 import { RequireRole } from '../components/admin/RequireRole.jsx';
 

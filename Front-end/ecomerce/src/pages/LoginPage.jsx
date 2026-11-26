@@ -15,11 +15,11 @@ export function LoginPage() {
         try {
             const result = await loginSuccess(email, password);
             if (result) {
-                    showAlert("Đăng nhập thành công", "success");
-                    setTimeout(() => {
-                        navigate('/');
-                    }, 1000);
-     
+                showAlert("Đăng nhập thành công", "success");
+                setTimeout(() => {
+                    navigate('/');
+                }, 500);
+
             }
         }
         catch (error) {
