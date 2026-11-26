@@ -3,8 +3,11 @@ import { adminGetOrders } from "../../services/apiAdmin";
 import { Dashboard, Time } from '../../utils/Date';
 import { formatVND } from '../../utils/formatCurrency';
 import { statusColor } from '../../utils/statusColor';
+import { Link } from "react-router-dom";
+// import { DetailOrder } from "./DetailOrder";
 export function OrderPage() {
-
+    const PAGE_SIZE = 2;
+    const [currentPage, setCurrentpage] = useState(1)
     const [orders, setOrder] = useState([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -18,7 +21,9 @@ export function OrderPage() {
     const completed = orders.filter(
         orders => orders.status === "completed"
     ).length;
-
+    const totalPage = Math.ceil(orders.length / PAGE_SIZE);
+    const startIndex = (currentPage - 1) * PAGE_SIZE
+    const pageOrders = orders.slice(startIndex, startIndex + PAGE_SIZE);
     useEffect(() => {
         async function fetchOrder() {
             try {
@@ -131,7 +136,7 @@ export function OrderPage() {
                     <span>Trạng thái</span>
                     <span>Thao tác</span>
                 </div>
-                {orders.map((item) => (
+                {pageOrders.map((item) => (
                     <div className="hidden sm:grid grid-cols-[2fr_1.5fr_1.5fr_1.2fr_1.5fr_auto] gap-3 px-5 py-4 border-b border-gray-50 hover:bg-gray-50/60 transition-colors items-center">
                         <div>
                             <span className="text-sm font-semibold text-blue-600 cursor-pointer hover:underline order-id" >#OD{item.id}</span>
@@ -148,15 +153,53 @@ export function OrderPage() {
                         <div className="text-sm font-semibold text-gray-900 whitespace-nowrap">{formatVND(item.total_price)}</div>
                         <div className={`inline-flex text-xs w-18 font-medium border rounded-full pl-1 ${statusColor(item.status)}`}>{item.status}</div>
                         <div>
-                            <button className=" text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center gap-1 whitespace-nowrap">
+                            <Link to={`/admin/order/${item.id}`}
+                                state={{ product: item }}
+                                className=" text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center gap-1 whitespace-nowrap">
                                 Chi tiết
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                                 </svg>
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 ))}
+                {totalPage > 1 && (
+                    <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100 text-sm text-gray-500">
+                        <span>
+                            Hiển thị {startIndex + 1}–{Math.min(startIndex + PAGE_SIZE, orders.length)} trong {orders.length} đơn hàng
+                        </span>
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => setCurrentpage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                ← trước
+                            </button>
+                            {Array.from({ length: totalPage }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    onClick={() => setCurrentpage(page)}
+                                    className={`px-3 py-1.5 rounded-lg border font-medium transition-colors ${currentPage === page
+                                        ? 'bg-blue-600 text-white border-blue-600'
+                                        : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                            {/* Nút Sau */}
+                            <button
+                                onClick={() => setCurrentpage(p => Math.min(totalPage, p + 1))}
+                                disabled={currentPage === totalPage}
+                                className="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                Sau →
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )

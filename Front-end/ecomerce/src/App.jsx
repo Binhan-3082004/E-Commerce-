@@ -9,9 +9,12 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { Checkoutform } from './components/cart/Checkoutform.jsx'
 import { HistoryCard } from './components/HistoryCard.jsx'
 import { useAuth } from './hooks/useAuth.js'
+import { useLocation } from 'react-router-dom'
 import './App.css'
 
 function AppContent() {
+  const { pathname } = useLocation()
+  const isAdminPage = pathname === '/admin' || pathname.startsWith('/admin/')
   const { isLoading } = useAuth()
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -32,11 +35,13 @@ function AppContent() {
   return (
     <>
       <CartProvider>
-        <Header onSearch={setSearchQuery} onAccountClick={() => setShowModal(true)}
-          openForm={() => openForm(true)} />
+        {!isAdminPage && (
+          <Header onSearch={setSearchQuery} onAccountClick={() => setShowModal(true)}
+            openForm={() => openForm(true)} />
+        )}
 
         <AppRoutes searchQuery={searchQuery} />
-        <Footer />
+        {!isAdminPage && <Footer />}
         {showModal && <Mockup onClose={() => setShowModal(false)} />}
         {showCheckOut && <Checkoutform onClose1={() => setShowCheckOut(false)} />}
         {closeForm && <HistoryCard onCloseForm={() => openForm(false)} />}

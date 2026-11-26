@@ -6,7 +6,7 @@ import { AdminPage } from '../pages/AdminPage.jsx';
 import { ProductPage } from '../components/admin/ProductPage/ProductPage.jsx'
 import { OrderPage } from '../components/admin/OrderPage.jsx'
 import { RequireRole } from '../components/admin/RequireRole.jsx';
-
+import { DetailOrder } from '../components/admin/DetailOrder.jsx'
 export function AppRoutes({ searchQuery }) {
     return (
         <Routes>
@@ -19,6 +19,8 @@ export function AppRoutes({ searchQuery }) {
             <Route path="/admin" element={<RequireRole><AdminPage /></RequireRole>}>
                 <Route path="product" element={<ProductPage />} />
                 <Route path="order" element={<OrderPage />} />
+                <Route path="order/:id" element={<DetailOrder />} />
+                <Route patth="client" />
             </Route>
         </Routes>
 

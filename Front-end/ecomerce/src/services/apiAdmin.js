@@ -57,3 +57,18 @@ export async function adminDeleteProduct(id) {
     return res.json();
 }
 
+export async function adminUpdateOrderStatus(id, status) {
+    const res = await fetch(`${BASE_URL}/orders/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            ...authHeader()
+        },
+        body: JSON.stringify({ status })
+    });
+    if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || 'Lỗi cập nhật trạng thái đơn hàng');
+    }
+    return res.json();
+}

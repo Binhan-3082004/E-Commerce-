@@ -1,5 +1,5 @@
-import { adminDeleteProduct } from "../../services/apiAdmin"
-import { showAlert } from "../ui/Alert";
+import { adminDeleteProduct } from "../../../services/apiAdmin"
+import { showAlert } from "../../ui/Alert";
 export function DeleteProduct({ product, onClose }) {
     async function submit(event) {
         event.preventDefault();

@@ -5,12 +5,10 @@ import { useState, useEffect } from "react";
 import { formatVND } from '../../../utils/formatCurrency';
 import { AddProduct } from './AddProduct'
 import { ChangeProduct } from './ChangeProduct';
-import { DeleteProduct } from '../DeleteProduct';
+import { DeleteProduct } from './DeleteProduct';
 export function ProductPage() {
-    // let currentPage = 1;
-    // const PAGE_SIZE = 5;
-
-
+    const PAGE_SIZE = 5;
+    const [currentPage, setCurrentpage] = useState(1)
     const [showForm, setShowForm] = useState(false)
     const [showFormChange, setshowFormChange] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState(null)
@@ -28,6 +26,9 @@ export function ProductPage() {
     const noStock = products.filter(
         product => product.stock === 0
     ).length
+    const totalPages = Math.ceil(products.length / PAGE_SIZE);
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    const pageProducts = products.slice(startIndex, startIndex + PAGE_SIZE);
     useEffect(() => {
         async function fetchProducts() {
             try {
@@ -151,7 +152,7 @@ export function ProductPage() {
                     <span className="text-center">Danh mục</span>
                     <span className=" text-center">Thao tác</span>
                 </div>
-                {products.map((item) => (
+                {pageProducts.map((item) => (
                     <div key={item.id} className=" grid grid-cols-[2fr_1fr_1fr_1fr_1fr] items-center gap-4 px-5 py-4 ">
                         <div className="flex items-center gap-3 min-w-0">
                             <img
@@ -189,6 +190,47 @@ export function ProductPage() {
                         </div>
                     </div>
                 ))}
+                {/* Phân trang */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100 text-sm text-gray-500">
+                        <span>
+                            Hiển thị {startIndex + 1}–{Math.min(startIndex + PAGE_SIZE, products.length)} trong {products.length} sản phẩm
+                        </span>
+                        <div className="flex items-center gap-1">
+                            {/* Nút Trước */}
+                            <button
+                                onClick={() => setCurrentpage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                ← trước
+                            </button>
+
+                            {/* Số trang */}
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    onClick={() => setCurrentpage(page)}
+                                    className={`px-3 py-1.5 rounded-lg border font-medium transition-colors ${currentPage === page
+                                        ? 'bg-blue-600 text-white border-blue-600'
+                                        : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+
+                            {/* Nút Sau */}
+                            <button
+                                onClick={() => setCurrentpage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                Sau →
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
             {showForm && <AddProduct onClose={() => setShowForm(false)} />}
             {showFormChange && < ChangeProduct product={selectedProduct} onClose={() => setshowFormChange(false)} />}
