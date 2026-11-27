@@ -829,6 +829,53 @@ app.get('/api/orders', authenticateToken, authorizeRoles('seller'), (req, res) =
     res.status(500).json({ success: false, message: error.message });
   }
 });
+/**
+ * GET /api/clients : Lấy toàn bộ danh sách người dùng 
+ */
+app.get('/api/clients', authenticateToken, authorizeRoles('seller'), (req, res) => {
+  try {
+    const clients = db.prepare('SELECT id, name, email, role,created_at FROM users').all();
+    res.json({
+      success: true,
+      total: clients.length,
+      clients: clients
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+/**
+ * PATCH /api/clients/id : Sửa quyền của người dùng 
+ * Cập nhật quyền của người dùng (chỉ dành cho seller)
+ * Body: {role: 'seller', 'buyer'}
+ *  */
+
+app.patch('/api/clients/:id/role', authenticateToken, authorizeRoles('seller'), (req, res) => {
+  try {
+    const { role } = req.body;
+    const validRole = ['seller', 'buyer']
+    if (!role || !validRole.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: `Quyền không hợp lệ. Chỉ chấp nhận một trong các giá trị: [${validRole.join(', ')}]`
+      });
+    }
+    const findUser = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+    if (!findUser) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng ' });
+    }
+    if (findUser.id === req.user.id) {
+      return res.status(403).json({ success: false, message: 'Không thể thay đổi quyền của chính mình' });
+    }
+    db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, req.params.id);
+    res.json({
+      success: true,
+      message: `Cập nhật quyền người dùng #${req.params.id} sang "${role}" thành công`
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+})
 
 /**
  * PATCH /api/orders/:id/status
